@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Reservatório</title>
+  <style>
+    :root {
+      --primary: #1261a0;
+      --primary-dark: #0b4778;
+      --accent: #24a7b3;
+      --bg: #eef5f8;
+      --card: #ffffff;
+      --text: #18323f;
+      --muted: #607580;
+      --border: #d7e3e8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, #edf7fb 0%, #dceaf0 100%);
+    }
+
+    .container {
+      width: min(960px, calc(100% - 32px));
+      margin: 32px auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .header h1 {
+      margin: 0 0 8px;
+      color: var(--primary-dark);
+      font-size: clamp(26px, 5vw, 38px);
+    }
+
+    .header p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 10px 30px rgba(40, 82, 102, 0.08);
+    }
+
+    .card h2 {
+      margin: 0 0 18px;
+      font-size: 20px;
+      color: var(--primary-dark);
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 16px;
+      color: var(--text);
+      background: #fff;
+    }
+
+    input:focus, select:focus {
+      outline: 3px solid rgba(36, 167, 179, 0.18);
+      border-color: var(--accent);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      gap: 10px;
+    }
+
+    button {
+      width: 100%;
+      height: 48px;
+      margin-top: 18px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+
+    button:hover { background: var(--primary-dark); }
+    button:active { transform: translateY(1px); }
+
+    .results {
+      min-height: 280px;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      padding: 13px 0;
+      border-bottom: 1px solid #edf2f4;
+    }
+
+    .result-item:last-child { border-bottom: 0; }
+
+    .result-item span {
+      color: var(--muted);
+    }
+
+    .result-item strong {
+      text-align: right;
+      color: var(--primary-dark);
+      font-size: 18px;
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .shape-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .shape-row label { margin: 0; }
+
+    .shape-row input { position: absolute; opacity: 0; }
+
+    .shape-row span {
+      display: grid;
+      place-items: center;
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .shape-row input:checked + span {
+      border-color: var(--accent);
+      background: #eaf8f9;
+      color: var(--primary-dark);
+    }
+
+    @media (max-width: 720px) {
+      .container { margin: 20px auto; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <h1>Calculadora de Reservatório</h1>
+      <p>Calcule o volume, a autonomia e o consumo diário estimado.</p>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Dados do reservatório</h2>
+
+        <label>Formato</label>
+        <div class="shape-row">
+          <label>
+            <input type="radio" name="shape" value="rectangular" checked>
+            <span>Retangular</span>
+          </label>
+          <label>
+            <input type="radio" name="shape" value="cylindrical">
+            <span>Cilíndrico</span>
+          </label>
+          <label>
+            <input type="radio" name="shape" value="circular">
+            <span>Redondo</span>
+          </label>
+        </div>
+
+        <div id="lengthField">
+          <label for="length">Comprimento</label>
+          <div class="field-row">
+            <input id="length" type="number" min="0" step="any" placeholder="Ex.: 2">
+            <select id="lengthUnit" aria-label="Unidade do comprimento">
+              <option value="m">metros</option>
+              <option value="cm">centímetros</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="widthField">
+          <label for="width">Largura</label>
+          <div class="field-row">
+            <input id="width" type="number" min="0" step="any" placeholder="Ex.: 1,5">
+            <select id="widthUnit" aria-label="Unidade da largura">
+              <option value="m">metros</option>
+              <option value="cm">centímetros</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="diameterField" hidden>
+          <label for="diameter">Diâmetro</label>
+          <div class="field-row">
+            <input id="diameter" type="number" min="0" step="any" placeholder="Ex.: 1,5">
+            <select id="diameterUnit" aria-label="Unidade do diâmetro">
+              <option value="m">metros</option>
+              <option value="cm">centímetros</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="height">Altura / profundidade</label>
+        <div class="field-row">
+          <input id="height" type="number" min="0" step="any" placeholder="Ex.: 1">
+          <select id="heightUnit" aria-label="Unidade da altura">
+            <option value="m">metros</option>
+            <option value="cm">centímetros</option>
+          </select>
+        </div>
+
+        <label for="occupation">Porcentagem preenchida (%)</label>
+        <input id="occupation" type="number" min="0" max="100" step="any" value="100" placeholder="100">
+
+        <label for="dailyUse">Consumo médio diário (litros/dia)</label>
+        <input id="dailyUse" type="number" min="0" step="any" placeholder="Ex.: 300">
+
+        <button id="calculate" type="button">Calcular</button>
+      </div>
+
+      <div class="card">
+        <h2>Resultados</h2>
+        <div id="results" class="results">
+          <div class="empty">
+            <p>Preencha os dados e clique em <strong>Calcular</strong>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const shapeInputs = document.querySelectorAll('input[name="shape"]');
+    const lengthField = document.getElementById('lengthField');
+    const widthField = document.getElementById('widthField');
+    const diameterField = document.getElementById('diameterField');
+
+    function updateShapeFields() {
+      const shape = document.querySelector('input[name="shape"]:checked').value;
+
+      if (shape === 'rectangular') {
+        lengthField.hidden = false;
+        widthField.hidden = false;
+        diameterField.hidden = true;
+      } else {
+        lengthField.hidden = true;
+        widthField.hidden = true;
+        diameterField.hidden = false;
+      }
+    }
+
+    shapeInputs.forEach(input => input.addEventListener('change', updateShapeFields));
+
+    function toMeters(value, unit) {
+      const number = Number(value);
+      return unit === 'cm' ? number / 100 : number;
+    }
+
+    function formatNumber(value, decimals = 2) {
+      return new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      }).format(value);
+    }
+
+    document.getElementById('calculate').addEventListener('click', () => {
+      const shape = document.querySelector('input[name="shape"]:checked').value;
+      const height = toMeters(document.getElementById('height').value, document.getElementById('heightUnit').value);
+      const occupation = Number(document.getElementById('occupation').value);
+      const dailyUse = Number(document.getElementById('dailyUse').value);
+
+      let volumeM3 = 0;
+
+      if (shape === 'rectangular') {
+        const length = toMeters(document.getElementById('length').value, document.getElementById('lengthUnit').value);
+        const width = toMeters(document.getElementById('width').value, document.getElementById('widthUnit').value);
+        if (length <= 0 || width <= 0 || height <= 0) return showError('Informe comprimento, largura e altura maiores que zero.');
+        volumeM3 = length * width * height;
+      } else {
+        const diameter = toMeters(document.getElementById('diameter').value, document.getElementById('diameterUnit').value);
+        if (diameter <= 0 || height <= 0) return showError('Informe diâmetro e altura maiores que zero.');
+        volumeM3 = (Math.PI * (diameter / 2) ** 2) * height;
+      }
+
+      if (!Number.isFinite(occupation) || occupation < 0 || occupation > 100) {
+        return showError('Informe uma porcentagem preenchida entre 0 e 100.');
+      }
+
+      const totalLiters = volumeM3 * 1000;
+      const filledLiters = totalLiters * (occupation / 100);
+      const autonomy = dailyUse > 0 ? filledLiters / dailyUse : null;
+
+      document.getElementById('results').innerHTML = `
+        <div class="result-item"><span>Volume total</span><strong>${formatNumber(totalLiters)} L</strong></div>
+        <div class="result-item"><span>Volume total</span><strong>${formatNumber(volumeM3)} m³</strong></div>
+        <div class="result-item"><span>Volume preenchido</span><strong>${formatNumber(filledLiters)} L</strong></div>
+        <div class="result-item"><span>Percentual livre</span><strong>${formatNumber(100 - occupation)}%</strong></div>
+        <div class="result-item"><span>Autonomia estimada</span><strong>${autonomy === null ? 'Informe o consumo' : formatNumber(autonomy, 1) + ' dias'}</strong></div>
+      `;
+    });
+
+    function showError(message) {
+      document.getElementById('results').innerHTML = `
+        <div class="empty">
+          <p style="color:#b23b3b"><strong>${message}</strong></p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
